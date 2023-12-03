@@ -1,4 +1,4 @@
-use std::cmp::{max};
+use std::cmp::max;
 
 fn main() {
     let input = include_str!("./input1.txt");
@@ -11,7 +11,9 @@ fn part2(input: &str) -> String {
     input
         .lines()
         .map(Game::from)
-        .inspect(|v| {dbg!(&v);})
+        .inspect(|v| {
+            dbg!(&v);
+        })
         .map(|g| g.power())
         .sum::<u32>()
         .to_string()
@@ -26,7 +28,12 @@ struct Game {
 }
 
 #[allow(dead_code)]
-const MAX_GAME: Game = Game {id: 0, red: 12, green: 13, blue: 14};
+const MAX_GAME: Game = Game {
+    id: 0,
+    red: 12,
+    green: 13,
+    blue: 14,
+};
 
 #[allow(dead_code)]
 impl Game {
@@ -90,9 +97,16 @@ mod test {
     use super::*;
     #[test]
     fn min_blocks_for_game() {
-        let sample = "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green"; 
-        assert_eq!(Game { id: 1, red: 4, green: 2, blue: 6}, Game::from(sample));
-
+        let sample = "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green";
+        assert_eq!(
+            Game {
+                id: 1,
+                red: 4,
+                green: 2,
+                blue: 6
+            },
+            Game::from(sample)
+        );
     }
 
     #[test]
