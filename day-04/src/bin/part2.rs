@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::{collections::{HashMap, HashSet}, iter::repeat};
 
 fn main() {
     let input = include_str!("./input1.txt");
@@ -50,38 +50,33 @@ impl Card {
 }
 
 fn part2(input: &str) -> String {
-    let cards: HashMap<u8, Card> = input
+    let cards: Vec<Card> = input
         .lines()
         .map(Card::from)
-        .map(|c| (c.card_id, c))
         .collect();
 
-    let mut stack: Vec<&Card> = cards.values().collect();
-    let mut card_count = HashMap::<u8, u32>::new();
+    let card_count: HashMap<u8, u32> = cards.iter().map(|c| c.card_id).zip(repeat(1u32)).collect();
 
-    while let Some(card) = stack.pop() {
-        card_count.entry(card.card_id).and_modify(|count| *count += 1).or_insert(1);
-        match card.num_matches() {
-            n if n > 0 => {
-                for i in 0..card.num_matches() {
-                    let copy_id = i as u8 + 1 + card.card_id;
-                    if let Some(copy_card) = cards.get(&copy_id) {
-                        stack.push(copy_card);
-                    }
-                };
-            }
-            _ => {}
+    cards.iter().fold(card_count, |mut acc, card| {
+        let add = *acc.get(&card.card_id).unwrap();
+        for i in 0..card.num_matches() {
+            let copy_id = i as u8 + 1 + card.card_id;
+            acc.entry(copy_id).and_modify(|v| *v += add);
         }
-    }
-    // dbg!(&card_count);
-
-    card_count.values().sum::<u32>().to_string()
-
+        acc
+    }).values().sum::<u32>().to_string()
+    
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn passing_answer() {
+        let input = include_str!("./input1.txt");
+        assert_eq!("5539496", part2(input));
+    }
 
     #[test]
     fn example_input() {
