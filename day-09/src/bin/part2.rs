@@ -22,26 +22,12 @@ fn part2(input: &str) -> String {
             sensor_data
                 .iter()
                 .rev()
-                .fold(vec![], |mut acc: Vec<_>, next_sensor_line| {
-                    if acc.is_empty() {
-                        let mut zero_sensor = next_sensor_line.clone();
-                        zero_sensor.push(0);
-                        acc.push(zero_sensor);
-                        return acc;
-                    }
-                    match (acc.last().and_then(|l| l.last()), next_sensor_line.last()) {
-                        (Some(prev), Some(last_num_in_line)) => {
-                            let mut interpolated = next_sensor_line.clone();
-                            interpolated.push(last_num_in_line - prev);
-                            acc.push(interpolated);
-                            acc
-                        }
-                        _ => panic!("Should not get here"),
-                    }
+                .skip(1)
+                .fold(0, |mut acc, curr_line| {
+                    acc = curr_line.last().expect("must have a value.") - acc;
+                    acc
                 })
         })
-        .map(|v| v.last().and_then(|top| Some(*top.last().unwrap())))
-        .flat_map(|n| n)
         .sum::<i32>()
         .to_string()
 }

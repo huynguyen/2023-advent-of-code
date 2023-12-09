@@ -14,33 +14,17 @@ fn part1(input: &str) -> String {
                 .map(|d| d.parse::<i32>().expect("a valid number"))
                 .collect_vec()
         })
-        .map(|sensor_reading| {
-            gen_sensor_until_zero(sensor_reading.as_slice())
-        })
+        .map(|sensor_reading| gen_sensor_until_zero(sensor_reading.as_slice()))
         .map(|sensor_data| {
             sensor_data
                 .iter()
                 .rev()
-                .fold(vec![], |mut acc: Vec<_>, next_sensor_line| {
-                    if acc.is_empty() {
-                        let mut zero_sensor = next_sensor_line.clone();
-                        zero_sensor.push(0);
-                        acc.push(zero_sensor);
-                        return acc;
-                    }
-                    match (acc.last().and_then(|l| l.last()), next_sensor_line.last()) {
-                        (Some(prev), Some(last_num_in_line)) => {
-                            let mut interpolated = next_sensor_line.clone();
-                            interpolated.push(prev + last_num_in_line);
-                            acc.push(interpolated);
-                            acc
-                        }
-                        _ => panic!("Should not get here"),
-                    }
+                .skip(1)
+                .fold(0, |mut acc, curr_line| {
+                    acc += curr_line.last().expect("must have a value.");
+                    acc
                 })
         })
-        .map(|v| v.last().and_then(|top| Some(*top.last().unwrap())))
-        .flat_map(|n| n)
         .sum::<i32>()
         .to_string()
 }
@@ -78,6 +62,13 @@ mod test {
     fn generates_next_based_on_diff() {
         let sample = [0, 3, 6, 9, 12, 15];
         assert_eq!(vec![3, 3, 3, 3, 3], gen_next_line(&sample))
+    }
+
+    #[test]
+    fn first_line_expansion() {
+        let sample = "0 3 6 9 12 15";
+
+        assert_eq!("18", part1(sample));
     }
 
     #[test]
