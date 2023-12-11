@@ -1,3 +1,4 @@
+use std::cmp::min;
 use std::collections::HashSet;
 use std::hash::Hash;
 
@@ -37,7 +38,10 @@ impl Hash for Loc {
 
 impl PartialEq for Loc {
     fn eq(&self, other: &Self) -> bool {
-        self.x == other.x && self.y == other.y && self.max_x == other.max_x && self.max_y == other.max_y 
+        self.x == other.x
+            && self.y == other.y
+            && self.max_x == other.max_x
+            && self.max_y == other.max_y
     }
 }
 
@@ -169,6 +173,7 @@ fn swap_start(start: &Loc, map: &[Vec<char>]) -> char {
     }
 }
 
+#[allow(dead_code)]
 fn print_map(map: &[Vec<char>]) {
     for l in map {
         println!("{:?}", l);
@@ -232,24 +237,47 @@ fn part2(input: &str) -> String {
             stack.push(next_locs);
         }
     }
-    print_map(&map);
+
+    let mut masked_original: Vec<Vec<char>> = input.lines().map(|l| l.chars().collect_vec()).collect();
+    map.iter().enumerate().for_each(|(y, l)| {
+        l.iter().enumerate().for_each(|(x, ch)| match ch {
+            '*' => (),
+            _ => masked_original[y][x] = '.',
+        })
+    });
+
+    // print_map(&masked_original);
+    let mut changes: Vec<(usize, usize, char)> = vec![];
+
+    for (y, line) in masked_original.iter().enumerate() {
+        for (x, ch) in line.iter().enumerate() {
+            match ch {
+                '.' => {
+                    let after = min(x + 1, max_x);
+                    let count = line[after..]
+                        .iter()
+                        .filter(|&ch| ['S', 'F', '7', '|'].contains(ch))
+                        .count();
+                    let value = if count % 2 == 1 { 'I' } else { 'O' };
+                    changes.push((y, x, value));
+                }
+                _ => continue,
+            }
+        }
+    }
+
+    // print_map(&map);
+    changes.iter().for_each(|chg| {
+        map[chg.0][chg.1] = chg.2;
+    });
+    // println!("After =====");
+    // print_map(&map);
     // dbg!(&stack);
-    answer
-        .iter()
-        .map(|l| l.steps)
-        .max()
-        .expect("highest step.")
+    map.iter()
+        .flat_map(|v| v.iter())
+        .filter(|ch| **ch == 'I')
+        .count()
         .to_string()
-
-}
-
-fn depth_search(loc: &Loc, visited: &HashSet<Loc>, map: &[Vec<char>]) -> usize {
-    let ch = loc.char_at(map);
-    loc.next_for(&ch).iter().filter(|loc| loc.is_ch_valid(map)).filter(|loc| visited.contains(loc)).map(|loc| {
-        let mut new_visited = visited.clone();
-        new_visited.insert(*loc);
-        depth_search(loc, visited, map)
-    }).max().unwrap_or(0)
 }
 
 #[cfg(test)]
@@ -309,4 +337,3 @@ L7JLJL-JLJLJL--JLJ.L";
         assert_eq!("10", part2(sample));
     }
 }
-
